@@ -63,8 +63,11 @@ pub fn cast<T>(schema: T) -> Changeset<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn connect_to_database() {
+        let connection_result = connect("localhost", "hermes", "postgres", "password");
+        assert!(connection_result.is_ok());
     }
 }
