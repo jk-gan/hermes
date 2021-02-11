@@ -1,23 +1,36 @@
 mod adapter;
 
+pub use adapter::Adapter;
 use postgres::{Client, NoTls};
-use serde::Deserialize;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
 
-#[derive(Debug, Deserialize)]
-struct DBConfig {
-    dev: DevConfig,
-}
-
-#[derive(Debug, Deserialize)]
-struct DevConfig {
+#[derive(Debug)]
+pub struct DBConfig {
     username: String,
     password: String,
     hostname: String,
     database: String,
     port: i64,
+    adapter: Adapter,
+}
+
+impl DBConfig {
+    pub fn new(
+        username: &str,
+        password: &str,
+        hostname: &str,
+        database: &str,
+        port: i64,
+        adapter: Adapter,
+    ) -> DBConfig {
+        DBConfig {
+            username: String::from(username),
+            password: String::from(password),
+            hostname: String::from(hostname),
+            database: String::from(database),
+            port,
+            adapter,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -34,16 +47,11 @@ pub struct Changeset<T> {
     action: Action,
 }
 
-pub fn connect(
-    hostname: &str,
-    database: &str,
-    username: &str,
-    password: &str,
-) -> Result<Client, String> {
+pub fn connect(db_config: DBConfig) -> Result<Client, String> {
     match Client::connect(
         format!(
             "host={} user={} password={} dbname={}",
-            hostname, username, password, database
+            db_config.hostname, db_config.username, db_config.password, db_config.database
         )
         .as_ref(),
         NoTls,
@@ -66,8 +74,5 @@ mod tests {
     use super::*;
 
     #[test]
-    fn connect_to_database() {
-        let connection_result = connect("localhost", "hermes", "postgres", "password");
-        assert!(connection_result.is_ok());
-    }
+    fn connect_to_database() {}
 }
