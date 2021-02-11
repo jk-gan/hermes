@@ -1,3 +1,5 @@
+mod adapter;
+
 use postgres::{Client, NoTls};
 use serde::Deserialize;
 use std::fs::File;
@@ -14,6 +16,7 @@ struct DevConfig {
     username: String,
     password: String,
     hostname: String,
+    database: String,
     port: i64,
 }
 
@@ -31,36 +34,22 @@ pub struct Changeset<T> {
     action: Action,
 }
 
-pub fn connect() {
-    let path = Path::new("./src/database.toml");
-    let display = path.display();
-
-    let mut file = match File::open(&path) {
-        Err(why) => panic!("couldn't open {}: {}", display, why),
-        Ok(file) => file,
-    };
-
-    let mut s = String::new();
-    match file.read_to_string(&mut s) {
-        Err(why) => panic!("couldn't read {}: {}", display, why),
-        Ok(_) => {
-            println!("{} contains:\n{}", display, s);
-            let db_config: DBConfig = toml::from_str(&s).unwrap();
-            println!("{:?}", db_config);
-            match Client::connect(
-                format!(
-                    "host={} user={} password={}",
-                    db_config.dev.hostname, db_config.dev.username, db_config.dev.password
-                )
-                .as_ref(),
-                NoTls,
-            ) {
-                Ok(_client) => {
-                    println!("connected successfully");
-                }
-                Err(err) => println!("{}", err),
-            }
-        }
+pub fn connect(
+    hostname: &str,
+    database: &str,
+    username: &str,
+    password: &str,
+) -> Result<Client, String> {
+    match Client::connect(
+        format!(
+            "host={} user={} password={} dbname={}",
+            hostname, username, password, database
+        )
+        .as_ref(),
+        NoTls,
+    ) {
+        Ok(client) => Ok(client),
+        Err(_) => Err(String::from("Can't connect to database")),
     }
 }
 
