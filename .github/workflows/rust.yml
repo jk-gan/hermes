@@ -1,7 +1,8 @@
 name: Hermes Action
 
 on: 
-  push: true
+  push:
+    branches: [ '*' ]
   pull_request:
     branches: [ main ]
 
