@@ -1,12 +1,10 @@
 mod postgres;
 
-#[derive(Debug)]
-pub enum Adapter {
-    Postgres,
-    MySQL,
-    Redis,
-}
+pub use self::postgres::Postgres;
+use super::Config;
 
-trait ConnectionAdapter {
-    fn connect() -> Self;
+pub trait ConnectionClient {
+    fn connect(config: Config) -> Result<Self, String>
+    where
+        Self: Sized;
 }

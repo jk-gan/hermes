@@ -1,9 +1,26 @@
-use super::ConnectionAdapter;
+use super::ConnectionClient;
+use crate::Config;
+use postgres::{Client, NoTls};
 
-struct Postgres {}
+pub struct Postgres {
+    client: Client,
+}
 
-impl ConnectionAdapter for Postgres {
-    fn connect() -> Self {
-        Self {}
+impl ConnectionClient for Postgres {
+    fn connect(config: Config) -> Result<Self, String> {
+        match Client::connect(
+            format!(
+                "host={} user={} password={} dbname={}",
+                config.hostname, config.username, config.password, config.database
+            )
+            .as_ref(),
+            NoTls,
+        ) {
+            Ok(client) => {
+                let postgres = Postgres { client };
+                Ok(postgres)
+            }
+            Err(_) => Err(String::from("Can't connect to database")),
+        }
     }
 }

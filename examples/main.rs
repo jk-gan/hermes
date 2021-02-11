@@ -1,16 +1,9 @@
-use hermes::{connect, Adapter, DBConfig};
+use hermes::{adapter::Postgres, connect, Config};
 
 fn main() {
-    let config = DBConfig::new(
-        "postgres",
-        "password",
-        "localhost",
-        "hermes",
-        5432,
-        Adapter::Postgres,
-    );
+    let pg_config = Config::new("postgres", "password", "localhost", "hermes", 5432);
 
-    match connect(config) {
+    match connect::<Postgres>(pg_config) {
         Ok(_client) => println!("Database is connected successfully"),
         Err(error) => panic!("Error: {}", error),
     }
